@@ -1,0 +1,8 @@
+a = 1111111
+b = 3
+
+while a > b
+{
+b  = b * 2
+print b
+}
