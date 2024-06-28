@@ -173,3 +173,212 @@ pub fn Tree(comptime T: type) type {
         }
     };
 }
+
+test "(a + b) * 5 test" {
+    const expect = std.testing.expect;
+
+    const str = "(a + b) * 5";
+    const allocator = std.testing.allocator;
+
+    var tokens = std.mem.tokenizeAny(u8, str, " ");
+    var vars = std.StringHashMap(bool).init(allocator);
+    defer vars.deinit();
+
+    try vars.put("a", true);
+    try vars.put("b", true);
+
+    var tree = Tree([]const u8).init(allocator);
+    defer tree.deinit();
+    try tree.buildTree(&tokens, &vars);
+
+    try expect(eql(u8, tree.tree.items[0].val, "a") and tree.tree.items[0].nodeType == .Var);
+    try expect(eql(u8, tree.tree.items[1].val, "+") and tree.tree.items[1].nodeType == .OP);
+    try expect(eql(u8, tree.tree.items[2].val, "b") and tree.tree.items[2].nodeType == .Var);
+    try expect(eql(u8, tree.tree.items[3].val, "*") and tree.tree.items[3].nodeType == .OP);
+    try expect(eql(u8, tree.tree.items[4].val, "5") and tree.tree.items[4].nodeType == .Const);
+}
+test "a-b test" {
+    const expect = std.testing.expect;
+
+    const str = "a - b";
+    const allocator = std.testing.allocator;
+
+    var tokens = std.mem.tokenizeAny(u8, str, " ");
+    var vars = std.StringHashMap(bool).init(allocator);
+    defer vars.deinit();
+
+    try vars.put("a", true);
+    try vars.put("b", true);
+
+    var tree = Tree([]const u8).init(allocator);
+    defer tree.deinit();
+    try tree.buildTree(&tokens, &vars);
+
+    try expect(eql(u8, tree.tree.items[0].val, "a") and tree.tree.items[0].nodeType == .Var);
+    try expect(eql(u8, tree.tree.items[1].val, "-") and tree.tree.items[1].nodeType == .OP);
+    try expect(eql(u8, tree.tree.items[2].val, "b") and tree.tree.items[2].nodeType == .Var);
+}
+
+test "a * b + c test" {
+    const expect = std.testing.expect;
+
+    const str = "a * b + c";
+    const allocator = std.testing.allocator;
+
+    var tokens = std.mem.tokenizeAny(u8, str, " ");
+    var vars = std.StringHashMap(bool).init(allocator);
+    defer vars.deinit();
+
+    try vars.put("a", true);
+    try vars.put("b", true);
+    try vars.put("c", true);
+
+    var tree = Tree([]const u8).init(allocator);
+    defer tree.deinit();
+    errdefer tree.printTree();
+    try tree.buildTree(&tokens, &vars);
+
+    try expect(eql(u8, tree.tree.items[0].parent.?.val, "*"));
+    try expect(eql(u8, tree.tree.items[2].parent.?.val, "*"));
+    try expect(eql(u8, tree.tree.items[3].right.?.val, "c"));
+    try expect(eql(u8, tree.tree.items[3].left.?.val, "*"));
+}
+test "a / b test" {
+    const expect = std.testing.expect;
+
+    const str = "a / b";
+    const allocator = std.testing.allocator;
+
+    var tokens = std.mem.tokenizeAny(u8, str, " ");
+    var vars = std.StringHashMap(bool).init(allocator);
+    defer vars.deinit();
+
+    try vars.put("a", true);
+    try vars.put("b", true);
+
+    var tree = Tree([]const u8).init(allocator);
+    defer tree.deinit();
+    try tree.buildTree(&tokens, &vars);
+
+    try expect(eql(u8, tree.tree.items[0].val, "a") and tree.tree.items[0].nodeType == .Var);
+    try expect(eql(u8, tree.tree.items[1].val, "/") and tree.tree.items[1].nodeType == .OP);
+    try expect(eql(u8, tree.tree.items[2].val, "b") and tree.tree.items[2].nodeType == .Var);
+}
+
+test "a | b test" {
+    const expect = std.testing.expect;
+
+    const str = "a | b";
+    const allocator = std.testing.allocator;
+
+    var tokens = std.mem.tokenizeAny(u8, str, " ");
+    var vars = std.StringHashMap(bool).init(allocator);
+    defer vars.deinit();
+
+    try vars.put("a", true);
+    try vars.put("b", true);
+
+    var tree = Tree([]const u8).init(allocator);
+    defer tree.deinit();
+    try tree.buildTree(&tokens, &vars);
+
+    try expect(eql(u8, tree.tree.items[0].val, "a") and tree.tree.items[0].nodeType == .Var);
+    try expect(eql(u8, tree.tree.items[1].val, "|") and tree.tree.items[1].nodeType == .OP);
+    try expect(eql(u8, tree.tree.items[2].val, "b") and tree.tree.items[2].nodeType == .Var);
+}
+test "a & b test" {
+    const expect = std.testing.expect;
+
+    const str = "a & b";
+    const allocator = std.testing.allocator;
+
+    var tokens = std.mem.tokenizeAny(u8, str, " ");
+    var vars = std.StringHashMap(bool).init(allocator);
+    defer vars.deinit();
+
+    try vars.put("a", true);
+    try vars.put("b", true);
+
+    var tree = Tree([]const u8).init(allocator);
+    defer tree.deinit();
+    try tree.buildTree(&tokens, &vars);
+
+    try expect(eql(u8, tree.tree.items[0].val, "a") and tree.tree.items[0].nodeType == .Var);
+    try expect(eql(u8, tree.tree.items[1].val, "&") and tree.tree.items[1].nodeType == .OP);
+    try expect(eql(u8, tree.tree.items[2].val, "b") and tree.tree.items[2].nodeType == .Var);
+}
+
+test "a ^ b test" {
+    const expect = std.testing.expect;
+
+    const str = "a ^ b";
+    const allocator = std.testing.allocator;
+
+    var tokens = std.mem.tokenizeAny(u8, str, " ");
+    var vars = std.StringHashMap(bool).init(allocator);
+    defer vars.deinit();
+
+    try vars.put("a", true);
+    try vars.put("b", true);
+
+    var tree = Tree([]const u8).init(allocator);
+    defer tree.deinit();
+    try tree.buildTree(&tokens, &vars);
+
+    try expect(eql(u8, tree.tree.items[0].val, "a") and tree.tree.items[0].nodeType == .Var);
+    try expect(eql(u8, tree.tree.items[1].val, "^") and tree.tree.items[1].nodeType == .OP);
+    try expect(eql(u8, tree.tree.items[2].val, "b") and tree.tree.items[2].nodeType == .Var);
+}
+
+test "a & (b + c) test" {
+    const expect = std.testing.expect;
+
+    const str = "a & (b + c)";
+    const allocator = std.testing.allocator;
+
+    var tokens = std.mem.tokenizeAny(u8, str, " ");
+    var vars = std.StringHashMap(bool).init(allocator);
+    defer vars.deinit();
+
+    try vars.put("a", true);
+    try vars.put("b", true);
+    try vars.put("c", true);
+
+    var tree = Tree([]const u8).init(allocator);
+    defer tree.deinit();
+    try tree.buildTree(&tokens, &vars);
+
+    try expect(eql(u8, tree.tree.items[0].val, "a") and tree.tree.items[0].nodeType == .Var);
+    try expect(eql(u8, tree.tree.items[1].val, "&") and tree.tree.items[1].nodeType == .OP);
+    try expect(eql(u8, tree.tree.items[2].val, "b") and tree.tree.items[2].nodeType == .Var);
+    try expect(eql(u8, tree.tree.items[3].val, "+") and tree.tree.items[3].nodeType == .OP);
+    try expect(eql(u8, tree.tree.items[4].val, "c") and tree.tree.items[4].nodeType == .Var);
+}
+
+test "a / b *c - d test" {
+    const expect = std.testing.expect;
+
+    const str = "a / b * c - d";
+    const allocator = std.testing.allocator;
+
+    var tokens = std.mem.tokenizeAny(u8, str, " ");
+    var vars = std.StringHashMap(bool).init(allocator);
+    defer vars.deinit();
+
+    try vars.put("a", true);
+    try vars.put("b", true);
+    try vars.put("c", true);
+    try vars.put("d", true);
+
+    var tree = Tree([]const u8).init(allocator);
+    defer tree.deinit();
+    try tree.buildTree(&tokens, &vars);
+
+    try expect(eql(u8, tree.tree.items[0].val, "a") and tree.tree.items[0].nodeType == .Var);
+    try expect(eql(u8, tree.tree.items[1].val, "/") and tree.tree.items[1].nodeType == .OP);
+    try expect(eql(u8, tree.tree.items[2].val, "b") and tree.tree.items[2].nodeType == .Var);
+    try expect(eql(u8, tree.tree.items[3].val, "*") and tree.tree.items[3].nodeType == .OP);
+    try expect(eql(u8, tree.tree.items[4].val, "c") and tree.tree.items[4].nodeType == .Var);
+    try expect(eql(u8, tree.tree.items[5].val, "-") and tree.tree.items[5].nodeType == .OP);
+    try expect(eql(u8, tree.tree.items[6].val, "d") and tree.tree.items[6].nodeType == .Var);
+}
